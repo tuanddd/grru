@@ -1,0 +1,20 @@
+{
+  "name": "gitlab-release-remover-ui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prebuild": "rm -rf build && mkdir build && cp -R public/* build",
+    "build": "yarn build:content-script && yarn build:background-script",
+    "build:content-script": "esbuild src/content-script.ts --bundle --outfile=build/content-script.js",
+    "build:background-script": "esbuild src/background.ts --bundle --outfile=build/background.js"
+  },
+  "author": "Dao Tuan <heryhudson@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@types/chrome": "^0.0.126"
+  },
+  "devDependencies": {
+    "esbuild": "^0.8.11"
+  }
+}

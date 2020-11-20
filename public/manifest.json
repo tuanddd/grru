@@ -1,0 +1,28 @@
+{
+  "name": "GRRU - Gitlab Release Remover UI",
+  "version": "1.0.0",
+  "description": "Adds a Remove button on Releases page.",
+  "manifest_version": 2,
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://git.d.foundation/*/*/-/releases*"
+      ],
+      "js": [
+        "content-script.js"
+      ]
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "webRequest",
+    "cookies",
+    "*://*/*"
+  ],
+  "short_name": "GRRU"
+}
