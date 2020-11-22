@@ -4,13 +4,13 @@
 <br/>
 <br/>
 
-# *G*itlab *R*elease *R*emover *UI*
+# *G*itlab *R*elease *R*emover *UI* - GRRU
 
 ## Why
 Currently as of this writing, [Gitlab doesn't provide a way on the UI to remove releases inside a project](https://gitlab.com/gitlab-org/gitlab/-/issues/213862) (not yet), this extension aims to fix that.
 
 ## Usage
-Download version 1.0.0, extract it, open Chrome and point to "chrome://extensions"
+Download latest version, extract it, open Chrome and point to "chrome://extensions"
 1. Tick "Developer mode"
 2. Load unpacked
 3. Point to the inside of the extracted folder.
