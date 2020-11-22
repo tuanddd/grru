@@ -1,5 +1,6 @@
 import {
   CSRF_TOKEN_KEY,
+  GITLAB_LIST_RELEASES_API_GRAPHQL_PATTERN,
   GITLAB_LIST_RELEASES_API_PATTERN,
   ON_RELEASES_FETCH_COMPLETED,
   Request,
@@ -13,22 +14,6 @@ let extraHeaders = {
 
 chrome.runtime.onMessage.addListener((request: Request, _, respond) => {
   switch (request.type) {
-    case "get-project-id":
-      fetch(`${request.payload.origin}/api/v4/projects`)
-        .then((res) =>
-          res
-            .json()
-            .then((projects) =>
-              respond(
-                projects.find(
-                  (p: any) => p.path_with_namespace === request.payload.name
-                )?.path_with_namespace
-              )
-            )
-            .catch(() => respond())
-        )
-        .catch(() => respond());
-      break;
     case "delete-release":
       fetch(
         `${request.payload.origin}/api/v4/projects/${encodeURIComponent(
@@ -49,17 +34,21 @@ chrome.runtime.onMessage.addListener((request: Request, _, respond) => {
 });
 
 chrome.webRequest.onCompleted.addListener(
-  ({ method, fromCache }) => {
-    if (method.toLowerCase() === "get" || fromCache) {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const tab = tabs[0];
-        chrome.tabs.sendMessage(tab.id as number, {
-          type: ON_RELEASES_FETCH_COMPLETED,
-        });
+  () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      chrome.tabs.sendMessage(tab.id as number, {
+        type: ON_RELEASES_FETCH_COMPLETED,
       });
-    }
+    });
   },
-  { urls: [GITLAB_LIST_RELEASES_API_PATTERN], types: ["xmlhttprequest"] },
+  {
+    urls: [
+      GITLAB_LIST_RELEASES_API_PATTERN,
+      GITLAB_LIST_RELEASES_API_GRAPHQL_PATTERN,
+    ],
+    types: ["xmlhttprequest"],
+  },
   []
 );
 
@@ -72,12 +61,18 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
       }
     });
   },
-  { urls: [GITLAB_LIST_RELEASES_API_PATTERN], types: ["xmlhttprequest"] },
+  {
+    urls: [
+      GITLAB_LIST_RELEASES_API_PATTERN,
+      GITLAB_LIST_RELEASES_API_GRAPHQL_PATTERN,
+    ],
+    types: ["xmlhttprequest"],
+  },
   ["requestHeaders", "extraHeaders"]
 );
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, _) => {
-  if (changeInfo.url || changeInfo.status === "complete") {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (tab.url?.includes("/-/releases") && changeInfo.status === "complete") {
     chrome.tabs.sendMessage(tabId, { type: ON_RELEASES_FETCH_COMPLETED });
   }
 });

@@ -1,20 +1,12 @@
-import { GITLAB_RELEASE_BLOCK_CLASSNAME, Request, GET_PROJECT_ID } from "const";
+import { GITLAB_RELEASE_BLOCK_CLASSNAME, Request } from "const";
 import RemoveButton from "button";
 
-let projectId: string | number;
-
 function scan() {
-  // ProjectId not found
-  if (!projectId) {
-    console.error("No project id found, exiting...");
-    return;
-  }
-  // No Release found
   const blocks = document.querySelectorAll<HTMLDivElement>(
     `.${GITLAB_RELEASE_BLOCK_CLASSNAME}`
   );
   if (blocks.length === 0) {
-    console.error("No Release found, exiting...");
+    console.log("[Gitlab Relase Remover UI] No Release found, exiting...");
     return;
   }
 
@@ -23,33 +15,18 @@ function scan() {
       `button[data-grru-tagname='${b.id}']`
     );
     if (existed) return;
-    b.firstChild?.appendChild(RemoveButton(projectId, b.id));
+    const [, group, project] = window.location.pathname.split("/");
+    b.firstChild?.appendChild(RemoveButton(`${group}/${project}`, b.id));
   });
 }
 
-function getProjectId() {
-  return new Promise<void>((resolve) => {
-    const [group, repo] = window.location.pathname.substring(1).split("/");
-    chrome.runtime.sendMessage(
-      {
-        type: GET_PROJECT_ID,
-        payload: {
-          origin: window.location.origin,
-          name: `${group}/${repo}`,
-        },
-      },
-      (res) => {
-        projectId = res;
-        resolve();
-      }
-    );
-  });
-}
+let timer: number;
 
 chrome.runtime.onMessage.addListener(function (request: Request, _1, _2) {
   switch (request.type) {
     case "on-releases-fetch-completed":
-      getProjectId().then(scan);
+      clearTimeout(timer);
+      timer = setTimeout(scan, 1000);
       break;
     default:
       break;
