@@ -1,7 +1,7 @@
 import { GITLAB_RELEASE_BLOCK_CLASSNAME, Request } from "const";
 import RemoveButton from "button";
 
-function scan() {
+function scan(canRemove: boolean) {
   const blocks = document.querySelectorAll<HTMLDivElement>(
     `.${GITLAB_RELEASE_BLOCK_CLASSNAME}`
   );
@@ -16,17 +16,21 @@ function scan() {
     );
     if (existed) return;
     const [, group, project] = window.location.pathname.split("/");
-    b.firstChild?.appendChild(RemoveButton(`${group}/${project}`, b.id));
+    b.firstChild?.appendChild(
+      RemoveButton({
+        projectId: `${group}/${project}`,
+        tagName: b.id,
+        content: canRemove ? "Delete" : "Your role is not allowed to delete",
+        disabled: !canRemove,
+      })
+    );
   });
 }
-
-let timer: number;
 
 chrome.runtime.onMessage.addListener(function (request: Request, _1, _2) {
   switch (request.type) {
     case "on-releases-fetch-completed":
-      clearTimeout(timer);
-      timer = setTimeout(scan, 1000);
+      scan(request.payload.canRemove);
       break;
     default:
       break;
