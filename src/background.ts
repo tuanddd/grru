@@ -1,10 +1,13 @@
 import {
   CSRF_TOKEN_KEY,
+  GITLAB_MEMBERS_API,
+  GITLAB_CURRENT_USER_API,
   GITLAB_LIST_RELEASES_API_GRAPHQL_PATTERN,
   GITLAB_LIST_RELEASES_API_PATTERN,
   ON_RELEASES_FETCH_COMPLETED,
   Request,
   REQUESTED_WITH_KEY,
+  ACCESS_LEVEL_REQUIRED,
 } from "const";
 
 let extraHeaders = {
@@ -33,24 +36,54 @@ chrome.runtime.onMessage.addListener((request: Request, _, respond) => {
   return true;
 });
 
-chrome.webRequest.onCompleted.addListener(
-  () => {
+function getCurrentUser(url: URL) {
+  return new Promise<number>((resolve) =>
+    fetch(`${url.origin}/${GITLAB_CURRENT_USER_API}`).then((res) =>
+      res.json().then((json) => resolve(json.id))
+    )
+  );
+}
+
+function getAccessLevelOfUser(userId: number, url: URL) {
+  return new Promise<number | null>((resolve) => {
+    const [, group, project] = url.pathname.split("/");
+    const projectId = encodeURIComponent(`${group}/${project}`);
+    fetch(`${url.origin}/${GITLAB_MEMBERS_API.replace(":id", projectId)}`).then(
+      (res) =>
+        res.json().then((json) => {
+          const user = json.find((u: any) => u.id === userId);
+          resolve(user?.access_level ?? null);
+        })
+    );
+  });
+}
+
+function canRemoveRelease() {
+  return new Promise((resolve) =>
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const tab = tabs[0];
-      chrome.tabs.sendMessage(tab.id as number, {
-        type: ON_RELEASES_FETCH_COMPLETED,
-      });
-    });
-  },
-  {
-    urls: [
-      GITLAB_LIST_RELEASES_API_PATTERN,
-      GITLAB_LIST_RELEASES_API_GRAPHQL_PATTERN,
-    ],
-    types: ["xmlhttprequest"],
-  },
-  []
-);
+      const [tab] = tabs;
+      const { url: rawURL } = tab;
+      if (!rawURL) return;
+      const url = new URL(rawURL);
+      getCurrentUser(url)
+        .then((userId) => getAccessLevelOfUser(userId, url))
+        .then((accessLevel) => {
+          if (accessLevel === null || accessLevel < ACCESS_LEVEL_REQUIRED)
+            resolve(false);
+          resolve(true);
+        });
+    })
+  );
+}
+
+function notifyReleasesFetched(tabId: number) {
+  canRemoveRelease().then((canRemove) =>
+    chrome.tabs.sendMessage(tabId, {
+      type: ON_RELEASES_FETCH_COMPLETED,
+      payload: { canRemove },
+    })
+  );
+}
 
 chrome.webRequest.onBeforeSendHeaders.addListener(
   ({ requestHeaders }) => {
@@ -71,10 +104,28 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
   ["requestHeaders", "extraHeaders"]
 );
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (tab.url?.includes("/-/releases") && changeInfo.status === "complete") {
-    chrome.tabs.sendMessage(tabId, { type: ON_RELEASES_FETCH_COMPLETED });
-  }
+function notify(details: chrome.webRequest.WebResponseCacheDetails) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const [tab] = tabs;
+    notifyReleasesFetched(tab.id as number);
+  });
+  chrome.webRequest.onCompleted.removeListener(notify);
+}
+
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+  if (changeInfo.status !== "loading") return;
+  chrome.webRequest.onCompleted.addListener(
+    notify,
+    {
+      urls: [
+        GITLAB_LIST_RELEASES_API_PATTERN,
+        GITLAB_LIST_RELEASES_API_GRAPHQL_PATTERN,
+      ],
+      tabId: tab.id,
+      types: ["xmlhttprequest", "main_frame"],
+    },
+    []
+  );
 });
 
 export {};
