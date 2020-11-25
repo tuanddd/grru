@@ -9,9 +9,11 @@
 ## Why
 Currently as of this writing, [Gitlab doesn't provide a way on the UI to remove releases inside a project](https://gitlab.com/gitlab-org/gitlab/-/issues/213862) (not yet), this extension aims to fix that.
 
-* Zero dependencies
-* Zero configuration
-* Works on any Gitlab sites whether gitlab.com or self-managed instances
+🏋️‍♀️ Zero dependencies
+
+🛠 Zero configuration
+
+🚀 Works on any Gitlab sites whether gitlab.com or self-managed instances
 
 ## Usage
 Download latest version, extract it, open Chrome and point to "chrome://extensions"
@@ -22,6 +24,18 @@ Download latest version, extract it, open Chrome and point to "chrome://extensio
 Because the nature of extension is just executing script as if it's coming from that page, basically it has control over all things - and the session cookie is not an exception.
 
 It uses the Release API provided by Gitlab and the signed-in user's session cookie to make a request call
+
+## Features
+
+### Respects the project's member roles
+
+If your role is `developer` or higher then a button will be shown to perform the delete action
+
+![role-allowed](./images/allowed.png)
+
+If you do not have enough permission to remove, another button will be shown, quite self-explantory
+
+![role-not-allowed](./images/not-allowed.png)
 
 ## Roadmap
 Assuming that Gitlab still haven't released their official UI yet:
