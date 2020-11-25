@@ -26,7 +26,7 @@ It uses the Release API provided by Gitlab and the signed-in user's session cook
 ## Roadmap
 Assuming that Gitlab still haven't released their official UI yet:
 1. [x] Remove release
-2. [ ] Scope action to certain member roles 
+2. [x] Scope action to certain member roles 
 3. [ ] Show nice error notification if fails
 4. [ ] Undo within e.g 10 secs
 
