@@ -9,11 +9,11 @@
 ## Why
 Currently as of this writing, [Gitlab doesn't provide a way on the UI to remove releases inside a project](https://gitlab.com/gitlab-org/gitlab/-/issues/213862) (not yet), this extension aims to fix that.
 
-🏋️‍♀️ Zero dependencies
+🏋️‍ &nbsp; Zero dependencies
 
-🛠 Zero configuration
+🛠 &nbsp; Zero configuration
 
-🚀 Works on any Gitlab sites whether gitlab.com or self-managed instances
+🚀 &nbsp; Works on any Gitlab sites whether gitlab.com or self-managed instances
 
 ## Usage
 Download latest version, extract it, open Chrome and point to "chrome://extensions"
