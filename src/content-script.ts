@@ -1,5 +1,6 @@
 import { GITLAB_RELEASE_BLOCK_CLASSNAME, Request } from "const";
 import RemoveButton from "button";
+import { getProjectId } from "utils";
 
 function scan(canRemove: boolean) {
   const blocks = document.querySelectorAll<HTMLDivElement>(
@@ -15,10 +16,10 @@ function scan(canRemove: boolean) {
       `button[data-grru-tagname='${b.id}']`
     );
     if (existed) return;
-    const [, group, project] = window.location.pathname.split("/");
+    const url = new URL(window.location.href);
     b.firstChild?.appendChild(
       RemoveButton({
-        projectId: `${group}/${project}`,
+        projectId: `${getProjectId(url)}`,
         tagName: b.id,
         content: canRemove ? "Delete" : "Your role is not allowed to delete",
         disabled: !canRemove,

@@ -9,6 +9,7 @@ import {
   REQUESTED_WITH_KEY,
   ACCESS_LEVEL_REQUIRED,
 } from "const";
+import { getProjectId } from "utils";
 
 let extraHeaders = {
   [CSRF_TOKEN_KEY]: "",
@@ -46,8 +47,7 @@ function getCurrentUser(url: URL) {
 
 function getAccessLevelOfUser(userId: number, url: URL) {
   return new Promise<number | null>((resolve) => {
-    const [, group, project] = url.pathname.split("/");
-    const projectId = encodeURIComponent(`${group}/${project}`);
+    const projectId = encodeURIComponent(`${getProjectId(url)}`);
     fetch(`${url.origin}/${GITLAB_MEMBERS_API.replace(":id", projectId)}`).then(
       (res) =>
         res.json().then((json) => {
