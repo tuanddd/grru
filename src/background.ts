@@ -48,7 +48,7 @@ function getCurrentUser(url: URL) {
 function getAccessLevelOfUser(userId: number, url: URL) {
   return new Promise<number | null>((resolve) => {
     const projectId = encodeURIComponent(`${getProjectId(url)}`);
-    fetch(`${url.origin}/${GITLAB_MEMBERS_API.replace(":id", projectId)}`).then(
+    fetch(`${url.origin}/${GITLAB_MEMBERS_API.replace(":id", projectId)}?user_ids=${userId}`).then(
       (res) =>
         res.json().then((json) => {
           const user = json.find((u: any) => u.id === userId);
