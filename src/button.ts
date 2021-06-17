@@ -36,28 +36,28 @@ export default ({
 
   cloned.addEventListener("click", (e) => {
     e.preventDefault();
-    const target = e.target as HTMLButtonElement;
-    const spinnerContainer = document.createElement("span");
-    const spinner = document.createElement("span");
-    spinnerContainer.classList.add(
-      "gl-spinner-container",
-      "gl-button-icon",
-      "gl-button-loading-indicator"
-    );
-    spinner.setAttribute("aria-label", "Loading");
-    spinner.classList.add(
-      "align-text-botom",
-      "gl-spinner",
-      "gl-spinner-light",
-      "gl-spinner-sm"
-    );
-    spinnerContainer.appendChild(spinner);
-
-    target.firstChild!.textContent = "Loading";
-    target.insertBefore(spinnerContainer, target.firstChild);
 
     const proceed = confirm("Are you sure about this?");
     if (proceed) {
+      const target = e.target as HTMLButtonElement;
+      const spinnerContainer = document.createElement("span");
+      const spinner = document.createElement("span");
+      spinnerContainer.classList.add(
+        "gl-spinner-container",
+        "gl-mr-2",
+        "gl-button-loading-indicator"
+      );
+      spinner.setAttribute("aria-label", "Loading");
+      spinner.classList.add(
+        "align-text-botom",
+        "gl-spinner",
+        "gl-spinner-light",
+        "gl-spinner-sm"
+      );
+      spinnerContainer.appendChild(spinner);
+
+      target.firstChild!.textContent = "Loading";
+      target.insertBefore(spinnerContainer, target.firstChild);
       chrome.runtime.sendMessage(
         {
           type: DELETE_RELEASE,
